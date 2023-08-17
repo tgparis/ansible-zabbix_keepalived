@@ -1,0 +1,9 @@
+---
+# Ansible playbook to install zabbix rxdb config
+- hosts:
+    - hosts
+  gather_facts: true
+  become: true
+  tasks:
+    - name: zabbix_prep for keepalived
+      include_tasks: tasks/zabbix_prep.yml

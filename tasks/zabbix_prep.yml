@@ -1,0 +1,59 @@
+---
+- name: Copy notify.sh
+  copy:
+    src: notify.sh
+    dest: /etc/keepalived/notify.sh
+    mode: 0755
+  when:
+    - "zabbix_keepalived_prep"
+
+- name: Add notify.sh to keepalived.conf
+  lineinfile:
+    path: /etc/keepalived/keepalived.conf
+    line: 'notify /etc/keepalived/notify.sh'
+    insertbefore: '}'
+  when:
+    - "zabbix_keepalived_prep"
+
+- name: Copy userparameter_keepalived.conf
+  copy:
+    src: userparameter_keepalived.conf
+    dest: /etc/zabbix/zabbix_agentd.d/userparameter_keepalived.conf
+    mode: 0644
+  when:
+    - "zabbix_keepalived_prep"
+
+- name: Comment out 'stats auth' in haproxy.cfg
+  lineinfile:
+    path: /etc/haproxy/haproxy.cfg
+    regexp: 'stats auth'
+    line: '    #stats auth'
+  when:
+    - "zabbix_haproxy_prep"
+
+- name: Add 'stats admin if LOCALHOST' in haproxy.cfg
+  lineinfile:
+    path: /etc/haproxy/haproxy.cfg
+    insertafter: '#stats auth'
+    line: '    stats admin if LOCALHOST'
+  when:
+    - "zabbix_haproxy_prep"
+
+- name: Restart keepalived
+  service:
+    name: keepalived
+    state: restarted
+  when:
+    - "zabbix_keepalived_prep"
+
+- name: Restart haproxy
+  service:
+    name: haproxy
+    state: restarted
+  when:
+    - "zabbix_haproxy_prep"
+
+- name: Restart zabbix-agent
+  service:
+    name: zabbix-agent
+    state: restarted
